@@ -1,3 +1,5 @@
+import math, operator
+
 def tokenize(theString):
 	newString=theString.replace("(", " ( ").replace(")"," ) ")
 	tokensList=newString.split()
@@ -29,27 +31,28 @@ def nestListOnPeren(tokensList):
 			return index+1, nestedList
 
 		else:
-			nestedList.append(item)
+			nestedList.append(typeOfItem(item))
 			index= index+1
 		item=getNextItem(index,tokensList)
 
-"""def findInnerMost(nestedList):
-	returnList=[]
-	index=0
-	for items in nestedList:
-		index=index+1
-		print "items", items, "index", index
-		if type(items)==list:
-			findInnerMost(list)
-			result= operate (items)
-			nestedList[index-1] =result
-			returnList.append(result)
-			findInnerMost(nestedList)
+def typeOfItem(token):
+	typeToken=None
+	try:
+		integer=int(token)
+		return integer
+	except valueError:
+		if token in dictOfVars.keys():
+			return dictOfVars[token]
+
+		elif token in operators.keys():
+			return token
+		elif token[0]=="'":
+			return "quote", token
 
 		else:
-			returnList.append(items)
-	print returnList
-	return operate(returnList)"""
+			typeToken="unknown"
+			return (token, typeToken)
+
 
 def findInnerMost(nestedList):
 	returnList=[]
@@ -59,7 +62,6 @@ def findInnerMost(nestedList):
 
 		else:
 			returnList.append(items)
-	print returnList
 	return returnList
 
 
@@ -72,12 +74,26 @@ def checkfor_single(scheme_item):
 		return item
 
 def evaluate(nestedList):
-	scheme_item=findInnerMost(nestedList)
-	while scheme_item:
-		nestedList[index]=operate(scheme_item)
-		scheme_item, index=findInnerMost(nestedList)
+	print operate(findInnerMost(tokenize(inputString)))
 
 
+def domath(operator, listOfOperands):
+	result=operators[operator](listOfOperands[0],listOfOperands[1])
+	if len(listOfOperands)>2:
+		restOfList=listOfOperands[2:]
+		restOfList.insert(0,result)
+		result=domath(operator,restOfList)
+
+	return result
+
+""">>> domath("+",[ 1, 2, 3,5])
+Traceback (most recent call last):
+  File "<input>", line 1, in <module>
+  File "interpreter.py", line 84, in domath
+    domath(operator, result+listOfOperands[2:])
+TypeError: unsupported operand type(s) for +: 'int' and 'list'
+>>> exit()
+"""
 def operate(scheme_item):
 	result=None
 	if len(scheme_item)==1:
@@ -89,13 +105,24 @@ def operate(scheme_item):
 		index=index+1
 		if type(items)==list:
 			scheme_item[index]==findInnerMost(scheme_item)
-	if operator== "+":
-		result=add(scheme_item[1:])
-	elif operator== "-":
-		result=subtract(scheme_item[1:])
-	elif operator=="*":
-		result=multiply(scheme_item[1:])
-
+		if operator in operators.keys():
+			result=domath(operator,)
+	"""if operator== "+":
+					result=add(scheme_item[1:])
+				elif operator== "-":
+					result=subtract(scheme_item[1:])
+				elif operator=="*":
+					result=multiply(scheme_item[1:])
+				elif operator =='/':
+					result=divide(scheme_item[1:])
+				elif operator =="<":
+					result=less(scheme_item[1:])
+				elif operator ==">":
+					result=greater(scheme_item[1:])
+				elif operator == "define":
+					result=define(scheme_item[1:])
+				elif operator == "quote":
+					result=scheme_item[1:]"""
 	return result
 
 
@@ -106,8 +133,8 @@ def add(listOfOperands):
 	return result
 
 def subtract(listOfOperands):
-	result=0
-	for items in listOfOperands:
+	result=int(listOfOperands[0])
+	for items in listOfOperands[1:]:
 		result=result-int(items)
 	return result
 
@@ -118,8 +145,34 @@ def multiply(listOfOperands):
 	return result
 
 def divide(listOfOperands):
-	numerator=listOfOperands[0]
+	numerator=float(listOfOperands[0])
 	for items in listOfOperands[1:]:
-		numerator=numerator/items
+		print numerator
+		numerator=numerator/float(items)
 
 	return numerator
+
+def less(listOfOperands):
+	firstNum=listOfOperands[0]
+	for nums in listOfOperands[1:]:
+		if nums > firstNum:
+			return False
+	return True
+
+
+def define(listOfOperands):
+	if len(listOfOperands)!=2:
+		print "reqires two items"
+		quit()
+	else:
+		dictOfVars[listOfOperands[0]]=listOfOperands[1]
+
+operators={"+":operator.add,"-":operator.sub,"*":operator.mul,"/":operator.div,"<":operator.lt,">":operator.gt,"define":"","quote":""}
+
+if __name__ == '__main__':
+
+	dictOfVars={}
+	while True:
+		inputString=raw_input()
+		evaluate(inputString)
+
