@@ -86,14 +86,6 @@ def domath(operator, listOfOperands):
 
 	return result
 
-""">>> domath("+",[ 1, 2, 3,5])
-Traceback (most recent call last):
-  File "<input>", line 1, in <module>
-  File "interpreter.py", line 84, in domath
-    domath(operator, result+listOfOperands[2:])
-TypeError: unsupported operand type(s) for +: 'int' and 'list'
->>> exit()
-"""
 def operate(scheme_item):
 	result=None
 	if len(scheme_item)==1:
@@ -106,23 +98,8 @@ def operate(scheme_item):
 		if type(items)==list:
 			scheme_item[index]==findInnerMost(scheme_item)
 		if operator in operators.keys():
-			result=domath(operator,)
-	"""if operator== "+":
-					result=add(scheme_item[1:])
-				elif operator== "-":
-					result=subtract(scheme_item[1:])
-				elif operator=="*":
-					result=multiply(scheme_item[1:])
-				elif operator =='/':
-					result=divide(scheme_item[1:])
-				elif operator =="<":
-					result=less(scheme_item[1:])
-				elif operator ==">":
-					result=greater(scheme_item[1:])
-				elif operator == "define":
-					result=define(scheme_item[1:])
-				elif operator == "quote":
-					result=scheme_item[1:]"""
+			result=domath(operator,items)
+
 	return result
 
 
