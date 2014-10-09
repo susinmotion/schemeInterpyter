@@ -1,47 +1,56 @@
 import math, operator
 dictOfVars={}
+
 def tokenize(theString):
 	newString=theString.replace("(", " ( ").replace(")"," ) ")
 	tokensList=newString.split()
-	if tokensList[0] !="(":
+	return tokensList
+	"""if tokensList[0] !="(":
 		nestedList=checkfor_single(tokensList)
 	else:
 		throwaway, nestedList= nestListOnPeren(tokensList)
-	return nestedList
+	return nestedList"""
 
-
-def getNextItem(index, theList):
-	if index>len(theList):
-		return None
-
-	return theList[index]
+def output(theString):
+	tokensList=theString
+	if type(theString)==str:
+		tokensList=tokenize(theString)
+	
+	throwaway, returnvalue= nestListOnPeren(tokensList)
+	return returnvalue[0]
+#def getNextItem(index, theList):
+#	if index>len(theList):
+#		return None
+#
+#	return theList[index]
 
 def nestListOnPeren(tokensList):
 
-	index=1
+	index=0
 	nestedList=[]
-	item=getNextItem(index,tokensList)
-	while item:
+	item=tokensList[0]
+	while index<len(tokensList):
+		item=tokensList[index]
+		index=index+1
 		if item == "(":
 			newIndex,newChunk=nestListOnPeren(tokensList[index:])
 			index=index+newIndex
 			nestedList.append(newChunk)
 
 		elif item ==")":
-			return index+1, nestedList
+			return index, nestedList
 
 		else:
 			nestedList.append(typeOfItem(item))
-			index= index+1
-
-		item=getNextItem(index,tokensList)
+			#index= index+1
+	return index, nestedList
 
 def typeOfItem(token):
 	typeToken=None
 	try:
 		integer=int(token)
 		return integer
-	except ValueError:
+	except (ValueError, TypeError):
 		if token in dictOfVars.keys():
 			return dictOfVars[token]
 
@@ -70,17 +79,18 @@ def findInnerMost(nestedList):
 	return returnList
 
 
-def checkfor_single(scheme_item):
+
+"""def checkfor_single(scheme_item):
 	if len(scheme_item)>1:
 		print("invalid syntax")
 		quit()
 	else:
 		item= scheme_item[0]
-		return item
+		return item"""
 
 def evaluate(nestedList):
-	print operate(findInnerMost(tokenize(inputString)))
-
+	#print operate(findInnerMost(tokenize(nestedList)))
+	return operate(findInnerMost(output(nestedList)))
 
 def domath(operator, listOfOperands):
 	for items in listOfOperands:
@@ -109,9 +119,9 @@ def operate(scheme_item):
 	if operator in operators.keys():
 		try:
 			result=domath(operator,scheme_item[1:])
-		except:
+		except IndexError:
 			result=operators[operator](scheme_item[1:])
-		print result
+
 #this is getting done too many times when we run this function on a homemade function
 
 	"""if operator in creators.keys():
@@ -181,8 +191,9 @@ def makeFun(expression, params, names):
 
 	for i in range(len(expression)):
 		expression[i] = typeOfItem(expression[i])
-
-	operate(expression)
+	print expression
+	result= operate (expression)
+	return result
 
 def let():
 	pass
