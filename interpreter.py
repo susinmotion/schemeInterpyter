@@ -37,17 +37,30 @@ def nestListOnPeren(tokensList):
 
 
 def findInnerMost(nestedList):
-	returnList=[]
-	if nestedList[0]=="define":
-		define(nestedList[1:])
-		return None
-	for items in nestedList:
-		if type(items)==list:
-			returnList.append(operate(findInnerMost(items)))
+	returnList=nestedList
+	for i in range(len(nestedList)):
+		if type(nestedList[i])==list:
+			returnList[i]= operate(findInnerMost(nestedList[i]))
 
-		else:
-			returnList.append(toInt(items))
 	return returnList
+
+def operate(innerMostItem):
+	for i in range(len(innerMostItem)):
+		innerMostItem[i]=toInt(innerMostItem[i])
+
+	if len(innerMostItem)==1:
+		return innerMostItem
+
+	else:
+		operator=innerMostItem[0]
+		if operator=="define":
+			define(innerMostItem[1:])
+			return None
+		try:
+			return domath(operator,innerMostItem[1:])
+		except IndexError:
+			return operators[operator](innerMostItem[1:])
+
 
 
 def toInt(token):
@@ -68,48 +81,19 @@ def toInt(token):
 		else:
 			typeToken="unknown"
 			return (token)
-"""def checkfor_single(scheme_item):
-	if len(scheme_item)>1:
-		print("invalid syntax")
-		quit()
-	else:
-		item= scheme_item[0]
-		return item"""
 
 def evaluate(nestedList):
 	#print operate(findInnerMost(tokenize(nestedList)))
 	return operate(findInnerMost(listify(nestedList)))
 
 def domath(operator, listOfOperands):
-	"""for items in listOfOperands:
-		if type(items) != int:
-			return None
-	else:
-		pass"""
+
 	result=operators[operator](listOfOperands[0],listOfOperands[1])
 	if len(listOfOperands)>2:
 		restOfList=listOfOperands[2:]
 		restOfList.insert(0,result)
 		result=domath(operator,restOfList)
 
-	return result
-
-def operate(scheme_item):
-	result=scheme_item
-	if len(scheme_item)>1:
-		operator=scheme_item[0]
-		index=0
-		for items in scheme_item[1:]:
-			index=index+1
-			scheme_item[index]==findInnerMost(scheme_item)
-		
-
-		if operator in operators.keys():
-			try:
-				print "trying to do math"
-				result=domath(operator,scheme_item[1:])
-			except IndexError:
-				result=operators[operator](scheme_item[1:])
 	return result
 
 def define(listOfOperands):
@@ -130,14 +114,9 @@ def define(listOfOperands):
 
 			operators[listOfOperands[0][0]]=lambda params: makeFun(listOfOperands[1],params, names)
 def makeFun(expression, params, names):
-	"""if len(names)==1:
-					dictOfVars[names[0]]=params[0]
-				else:"""
 	for i in range(len(names)):
 		dictOfVars[names[i]]=params[i]
 
-	"""for i in range(len(expression)):
-		expression[i] = typeOfItem(expression[i])"""
 	result= operate (expression)
 	return result
 
