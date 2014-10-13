@@ -50,28 +50,17 @@ def operate(innerMostItem, currentVars=dictOfVars):
 		return innerMostItem[0]
 
 	elif operator in operators.keys():
-
+			
 		if operator=="define":
 			define(innerMostItem[1:])
 			return None
 		elif operator=="let":
-			let(innerMostItem[1:])
+			return let(innerMostItem[1:])
 
-
-		try:
-
-			return domath(operator,innerMostItem[1:], currentVars)
-		except IndexError:
-			return operators[operator](innerMostItem[1:])
+		return domath(operator,innerMostItem[1:], currentVars)
 
 	else:
 		return innerMostItem
-
-def intify():
-	for i in range(len(innerMostItem)):
-		innerMostItem[i]=toInt(innerMostItem[i], currentVars)
-		if type(innerMostItem[i]) != int:
-			return innerMostItem
 
 def toInt(token, currentVars=dictOfVars):
 	typeToken=None
@@ -80,7 +69,7 @@ def toInt(token, currentVars=dictOfVars):
 		return integer
 	except (ValueError, TypeError):
 		if token in currentVars.keys():
-			return currentVars[token]
+			return int(currentVars[token])
 
 		elif token in operators.keys():
 			return token
@@ -94,19 +83,26 @@ def toInt(token, currentVars=dictOfVars):
 
 def evaluate(nestedList):
 	#print operate(findInnerMost(tokenize(nestedList)))
+	tokenized=listify(nestedList)
+	if tokenized[0] in creators.keys():
+		return creators[tokenized[0]](tokenized[1:])
 	return operate(findInnerMost(listify(nestedList)))
 
-def domath(operator, listOfOperands, currentVars):
+def domath(operator, listOfOperands, currentVars=dictOfVars):
 	for i in range(len(listOfOperands)):
 		listOfOperands[i]=toInt(listOfOperands[i], currentVars)
 		if type(listOfOperands[i]) != int:
+			listOfOperands.insert(0, operator)
 			return listOfOperands
-	result=operators[operator](listOfOperands[0],listOfOperands[1])
+	if len(listOfOperands)==1:
+		return operators[operator](listOfOperands)
+	else:
+		result=operators[operator](listOfOperands[0],listOfOperands[1])
+
 	if len(listOfOperands)>2:
 		restOfList=listOfOperands[2:]
 		restOfList.insert(0,result)
-		result=domath(operator,restOfList)
-
+		result=domath(operator,restOfList, currentVars)
 	return result
 
 def define(listOfOperands):
@@ -124,7 +120,6 @@ def define(listOfOperands):
 			for items in listOfOperands[0][1:]:
 				params.append(items) 
 				names.append(str(items))
-
 			operators[listOfOperands[0][0]]=lambda params: makeFun(listOfOperands[1],params, names)
 
 
@@ -132,7 +127,6 @@ def define(listOfOperands):
 def let(listOfOperands, currentVars=dictOfVars):
 	for items in listOfOperands[0]:
 		currentVars[items[0]]=items[1]
-	#print currentVars,"currentVars"
 	result=operate(findInnerMost(listOfOperands[1:],currentVars))
 	return result
 	
