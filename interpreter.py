@@ -1,5 +1,5 @@
 import math, operator
-dictOfVars={}
+dictOfVars={'y':5}
 
 def tokenize(theString):
 	newString=theString.replace("(", " ( ").replace(")"," ) ")
@@ -36,41 +36,51 @@ def nestListOnPeren(tokensList):
 	return index, nestedList
 
 
-def findInnerMost(nestedList):
+def findInnerMost(nestedList, currentVars=dictOfVars):
 	returnList=nestedList
 	for i in range(len(nestedList)):
 		if type(nestedList[i])==list:
-			returnList[i]= operate(findInnerMost(nestedList[i]))
+			returnList[i]= operate(findInnerMost(nestedList[i]), currentVars)
 
 	return returnList
 
-def operate(innerMostItem):
-	for i in range(len(innerMostItem)):
-		innerMostItem[i]=toInt(innerMostItem[i])
-
+def operate(innerMostItem, currentVars=dictOfVars):
+	operator=innerMostItem[0]
 	if len(innerMostItem)==1:
-		return innerMostItem
+		return innerMostItem[0]
 
-	else:
-		operator=innerMostItem[0]
+	elif operator in operators.keys():
+
 		if operator=="define":
 			define(innerMostItem[1:])
 			return None
+		elif operator=="let":
+			let(innerMostItem[1:])
+
+
 		try:
-			return domath(operator,innerMostItem[1:])
+
+			return domath(operator,innerMostItem[1:], currentVars)
 		except IndexError:
 			return operators[operator](innerMostItem[1:])
 
+	else:
+		return innerMostItem
 
+def intify():
+	for i in range(len(innerMostItem)):
+		innerMostItem[i]=toInt(innerMostItem[i], currentVars)
+		if type(innerMostItem[i]) != int:
+			return innerMostItem
 
-def toInt(token):
+def toInt(token, currentVars=dictOfVars):
 	typeToken=None
 	try:
 		integer=int(token)
 		return integer
 	except (ValueError, TypeError):
-		if token in dictOfVars.keys():
-			return dictOfVars[token]
+		if token in currentVars.keys():
+			return currentVars[token]
 
 		elif token in operators.keys():
 			return token
@@ -86,8 +96,11 @@ def evaluate(nestedList):
 	#print operate(findInnerMost(tokenize(nestedList)))
 	return operate(findInnerMost(listify(nestedList)))
 
-def domath(operator, listOfOperands):
-
+def domath(operator, listOfOperands, currentVars):
+	for i in range(len(listOfOperands)):
+		listOfOperands[i]=toInt(listOfOperands[i], currentVars)
+		if type(listOfOperands[i]) != int:
+			return listOfOperands
 	result=operators[operator](listOfOperands[0],listOfOperands[1])
 	if len(listOfOperands)>2:
 		restOfList=listOfOperands[2:]
@@ -113,17 +126,27 @@ def define(listOfOperands):
 				names.append(str(items))
 
 			operators[listOfOperands[0][0]]=lambda params: makeFun(listOfOperands[1],params, names)
-def makeFun(expression, params, names):
-	for i in range(len(names)):
-		dictOfVars[names[i]]=params[i]
 
-	result= operate (expression)
+
+
+def let(listOfOperands, currentVars=dictOfVars):
+	for items in listOfOperands[0]:
+		currentVars[items[0]]=items[1]
+	#print currentVars,"currentVars"
+	result=operate(findInnerMost(listOfOperands[1:],currentVars))
+	return result
+	
+
+def makeFun(expression, params, names):
+	currentVars=dictOfVars
+	for i in range(len(names)):
+		currentVars[names[i]]=params[i]
+
+	result= operate(findInnerMost(expression, currentVars))
 	return result
 
-def let():
-	pass
-operators={"+":operator.add,"-":operator.sub,"*":operator.mul,"/":operator.div,"<":operator.lt,">":operator.gt}
-math={"+":operator.add,"-":operator.sub,"*":operator.mul,"/":operator.div,"<":operator.lt,">":operator.gt}
+operators={"+":operator.add,"-":operator.sub,"*":operator.mul,"/":operator.div,"<":operator.lt,">":operator.gt, "let":let}
+math={"+":operator.add,"-":operator.sub,"*":operator.mul,"/":operator.div,"<":operator.lt,">":operator.gt }
 creators={"let":let,"define":define,"set!":define,"quote":""}
 
 if __name__ == '__main__':
